@@ -1,0 +1,8 @@
+package message;
+
+message Message {
+  required int32 MessageType = 1;
+  optional string Recipient = 2;
+  optional string Sender = 3;
+  optional string Message = 4;
+}

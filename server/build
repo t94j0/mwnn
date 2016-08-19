@@ -1,0 +1,4 @@
+go get github.com/dchest/uniuri
+go get github.com/golang/protobuf/proto
+
+go build -o mwnnserver main.go

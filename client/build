@@ -1,0 +1,5 @@
+go get github.com/golang/protobuf/proto
+go get github.com/howeyc/gopass
+go get github.com/t94j0/gocui
+
+go build -o mwnn *.go
