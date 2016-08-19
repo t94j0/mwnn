@@ -9,8 +9,8 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/golang/protobuf/proto"
-	"github.com/t94j0/messenger/client/gpg"
-	pb "github.com/t94j0/messenger/client/message"
+	"github.com/t94j0/mwnn/client/gpg"
+	pb "github.com/t94j0/mwnn/client/message"
 )
 
 // Create connection stack for managing all user connections

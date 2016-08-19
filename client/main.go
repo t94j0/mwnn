@@ -19,8 +19,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/howeyc/gopass"
 	"github.com/t94j0/gocui"
-	"github.com/t94j0/messenger/client/gpg"
-	pb "github.com/t94j0/messenger/client/message"
+	"github.com/t94j0/mwnn/client/gpg"
+	pb "github.com/t94j0/mwnn/client/message"
 )
 
 /*
