@@ -3,7 +3,7 @@
 ![](http://i.imgur.com/232MLcS.gif)
 
 # What is MWNN?
-IRC has never been a good tool for securely talking to other people because the data is sent in clear text over the internet. (Unless you are using SSL, but there are inherent (vulnerabilies with it)[http://www.howtogeek.com/182425/5-serious-problems-with-https-and-ssl-security-on-the-web/]). With MWNN, I am trying to create an irc-like service that uses GPG encryption to send text data across the internet safely so that there is no possibility for a MITM attack.
+IRC has never been a good tool for securely talking to other people because the data is sent in clear text over the internet. (Unless you are using SSL, but there are inherent [vulnerabilies with it](http://www.howtogeek.com/182425/5-serious-problems-with-https-and-ssl-security-on-the-web/). With MWNN, I am trying to create an irc-like service that uses GPG encryption to send text data across the internet safely so that there is no possibility for a MITM attack.
 
 For more information on GPG, go [here](https://www.gnupg.org/)
 
