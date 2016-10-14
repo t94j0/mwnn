@@ -4,7 +4,7 @@ import (
 	"os/user"
 
 	"github.com/spf13/cobra"
-	"../client"
+	"github.com/t94j0/mwnn/client"
 )
 
 var HOME_DIR string
