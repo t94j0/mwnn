@@ -27,3 +27,8 @@ For more information on GPG, go [here](https://www.gnupg.org/)
 
 **Viewing Public Keys**
 /seekeys - This will display all connected user's keys. Always be sure that the keys you see here match what the other user's see. To exit, press Ctrl-q
+
+# TODO:
+* Add Viper to allow default configuration files
+* Add key generation under a new cobra name so that the user can use `mwnn keys create` as well as `mwnn keys list`
+* Random TODOs in the codebase

@@ -8,9 +8,9 @@ import (
 )
 
 var ClientCmd = &cobra.Command{
-	Use:   "client",
+	Use:   "client [server]",
 	Short: "Start MWNN client",
-	Long:  "Start the MWNN client",
+	Long:  `Starts the MWNN client and connect to the specified server.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			serviceHost        string
@@ -20,13 +20,14 @@ var ClientCmd = &cobra.Command{
 			logLocation        string
 		)
 
+		// Create variable to find home folder to find the ~/.mwnn folder
 		currUsr, err := user.Current()
 		if err != nil {
 			return err
 		}
 		HOME_DIR := currUsr.HomeDir
 
-		cmd.Flags().StringVarP(&serviceHost, "host", "c", "localhost", "Host to connect to")
+		serviceHost = args[0]
 		cmd.Flags().StringVarP(&servicePort, "port", "p", "6666", "Port to connect to when trying host")
 		cmd.Flags().StringVarP(&publicKeyLocation, "publickey", "u", HOME_DIR+"/.mwnn/key.pub", "Location of public key")
 		cmd.Flags().StringVarP(&privateKeyLocation, "privatekey", "r", HOME_DIR+"/.mwnn/key.prv", "Location of private key")
