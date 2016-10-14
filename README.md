@@ -29,6 +29,11 @@ For more information on GPG, go [here](https://www.gnupg.org/)
 /seekeys - This will display all connected user's keys. Always be sure that the keys you see here match what the other user's see. To exit, press Ctrl-q
 
 # TODO:
-* Add Viper to allow default configuration files
 * Add key generation under a new cobra name so that the user can use `mwnn keys create` as well as `mwnn keys list`
+* Message history / scrolling textbox
+* Implement User info storage (channels, rights, friends?, admin status)
+* Manage concurrency/parallelism of server
+* Add Client-side history/favorites
+* General UI changes
+* Add more commands
 * Random TODOs in the codebase
