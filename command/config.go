@@ -17,7 +17,7 @@ func getConfig() Setup {
 	if _, err := os.Stat(HOME_DIR+"/.mwnnrc"); os.IsNotExist(err) { // If there is no config file make one
 		*con = generateConfig(*con)
 	} else { // Else assert that it has the correct fields
-		con, _ := config.ReadDefault(HOME_DIR+"/.mwnnrc")
+		con, _ = config.ReadDefault(HOME_DIR+"/.mwnnrc")
 		if con.HasSection("Keys"){
 			if !con.HasOption("Keys", "Public-Key-Location"){con.AddOption("Keys", "Public-Key-Location", HOME_DIR+"/.gnupg/pub")}
 			if !con.HasOption("Keys", "Private-Key-Location"){con.AddOption("Keys", "Private-Key-Location", HOME_DIR+"/.gnupg/priv")}
