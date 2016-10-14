@@ -12,9 +12,7 @@ var ServerCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var port string
 		cmd.Flags().StringVarP(&port, "port", "p", "6666", "Set the port of the server")
-		if err := server.StartServer(port); err != nil {
-			return err
-		}
+		server.StartServer(port)
 		return nil
 	},
 }

@@ -4,8 +4,10 @@ import (
 	"os/user"
 
 	"github.com/spf13/cobra"
-	"github.com/t94j0/mwnn/client"
+	"../client"
 )
+
+var HOME_DIR string
 
 var ClientCmd = &cobra.Command{
 	Use:   "client [server]",
@@ -25,12 +27,14 @@ var ClientCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		HOME_DIR := currUsr.HomeDir
+		HOME_DIR = currUsr.HomeDir
+
+		set := getConfig()
 
 		serviceHost = args[0]
-		cmd.Flags().StringVarP(&servicePort, "port", "p", "6666", "Port to connect to when trying host")
-		cmd.Flags().StringVarP(&publicKeyLocation, "publickey", "u", HOME_DIR+"/.mwnn/key.pub", "Location of public key")
-		cmd.Flags().StringVarP(&privateKeyLocation, "privatekey", "r", HOME_DIR+"/.mwnn/key.prv", "Location of private key")
+		cmd.Flags().StringVarP(&servicePort, "port", "p", "8080", "Port to connect to when trying host")
+		cmd.Flags().StringVarP(&publicKeyLocation, "publickey", "u", set.pubKey, "Location of public key")
+		cmd.Flags().StringVarP(&privateKeyLocation, "privatekey", "r", set.privKey, "Location of private key")
 		cmd.Flags().StringVarP(&logLocation, "log", "l", HOME_DIR+"/.mwnn/log.txt", "Location of log file")
 		client.StartClient(serviceHost, servicePort, publicKeyLocation, privateKeyLocation, logLocation)
 		return nil
