@@ -1,4 +1,4 @@
-package main
+package client
 
 func red(text string) string {
 	return "\x1b[0;31m" + text + "\x1b[0;0m"
