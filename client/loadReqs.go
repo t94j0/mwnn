@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"github.com/howeyc/gopass"
 )
 
 // Configure logger
