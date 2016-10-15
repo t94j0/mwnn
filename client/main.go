@@ -114,6 +114,18 @@ func clearInput(g *gocui.Gui) {
 	})
 }
 
+
+/*
+
+Idea for commandHandler:
+	* Make this a function a wrapper that calls a function that takes a commandType string and returns a function.
+	  This allows us to reap a few benefits:
+		- We only have to write the default commands
+		- Modularizes commands
+		- Makes it easier for third parties to add command plugins
+		- Basically makes the way for handling commands a library
+
+*/
 // Refrenced in main.go under messageHandler
 func commandHandler(command string, g *gocui.Gui) error {
 	command = strings.TrimLeft(command, "/")
@@ -142,7 +154,7 @@ func commandHandler(command string, g *gocui.Gui) error {
 
 			if _, ok := connectedUsers[user]; !ok {
 				fmt.Fprintln(v, "That user does not exist")
-				return nil
+				return nil // Possibly return custom "Error: User not found" instead of printing?
 			}
 
 			messageEnc, err := gpg.Encrypt(message, string(connectedUsers[user].PublicKey))
@@ -150,7 +162,7 @@ func commandHandler(command string, g *gocui.Gui) error {
 				fmt.Fprintln(v, "There was a problem encrypting message. Aborting")
 				return err
 			}
-			fmt.Fprintln(v, "<-", user+":", message)
+			fmt.Fprintln(v, "<- ", user+":", message) // Maybe "user <- You: message"?
 			if err := sendMessage(7, user, messageEnc); err != nil {
 				fmt.Fprintln(v, "There was a problem sending the message")
 				return err
@@ -349,7 +361,7 @@ func testPassword() error {
 }
 
 // Configure logger
-func ConfigureLogger() {
+func configureLogger() {
 	var err error
 	// Open the log file so that we can create the logger object
 	logFile, err = os.OpenFile(logLocation, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
@@ -361,15 +373,23 @@ func ConfigureLogger() {
 	logger = log.New(logFile, "logger: ", log.Ldate|log.Ltime|log.Llongfile)
 }
 
-// Get get password for the specified private key
-func GetPassword() {
-	// Configure the public variable 'decryptor'
-	privateKeyRaw, err := ioutil.ReadFile(privateKeyLocation)
+// Currently reads both keys at once, might want to seperate if we're going to implement a login page
+func loadKeys(publicKeyLocation string, privateKeyLocation string) {
+
+	publicKeyByte, err := ioutil.ReadFile(publicKeyLocation)
+	if err != nil {
+		fmt.Println(err)
+	}
+	publicKey = string(publicKeyByte)
+
+	// Get the password for the private key/ id
+	// Configure the package-wide variable 'decryptor'
+	privateKeyByte, err := ioutil.ReadFile(privateKeyLocation)
 	if err != nil {
 		logger.Panic(err)
 	}
 
-	decryptor.PrivateKey = string(privateKeyRaw)
+	decryptor.PrivateKey = string(privateKeyByte)
 
 	// List identities for user to choose
 	if err := decryptor.GetEntities(); err != nil {
@@ -396,6 +416,7 @@ func GetPassword() {
 		os.Exit(1)
 	}
 	// FUTURE: Private key is stored in memory, is this OK?
+	// Pretty sure this is fine, openssh client (temporarily) stores ssh private key in a file at a user's homedir
 	decryptor.Password = string(privateKeyPass)
 	currentUser, _, _, err = decryptor.GetEntity()
 	if err != nil {
@@ -407,25 +428,17 @@ func GetPassword() {
 		fmt.Println("The password is incorrect")
 		logger.Fatal("Password Failed:", err)
 	}
+
 }
 
 func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) {
 
 	serviceHost = host
 	servicePort = port
-	publicKeyLocation = pubKeyLoc
-	privateKeyLocation = prvKeyLoc
+	loadKeys(pubKeyLoc, prvKeyLoc)
 	logLocation = logLoc
 
-	publicKeyByte, err := ioutil.ReadFile(publicKeyLocation)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	publicKey = string(publicKeyByte)
-
-	ConfigureLogger()
-	GetPassword()
+	configureLogger()
 
 	defer logFile.Close()
 	// Dial server to get a net.Conn object and to make sure that the host is up
