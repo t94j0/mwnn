@@ -1,20 +1,16 @@
 package client
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/howeyc/gopass"
 	"github.com/t94j0/gocui"
 	"github.com/t94j0/mwnn/client/gpg"
 	pb "github.com/t94j0/mwnn/client/message"
