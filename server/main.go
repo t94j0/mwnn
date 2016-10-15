@@ -235,18 +235,19 @@ func handleListener(conn net.Conn) {
 // System Functions //
 //////////////////////
 
-func StartServer(port string) {
-	// FOR THE GLORY OF SATAN OF COURSE!
+func StartServer(port string) error {
+	// FOR THE GLORY OF SATAN OF COURSE! -Max
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-	fmt.Println("Started listener")
+	fmt.Println("Started listener on port", port)
 	for {
 		// We accept all connections, but if we want to block users from certian ip addresses,
 		// then we can do so here
 		conn, err := listener.Accept()
 		if err != nil {
+			// We don't want to return this error because the server can still function without this
 			fmt.Println(err)
 		}
 		fmt.Println("A user has connected")
