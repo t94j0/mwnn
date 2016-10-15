@@ -5,14 +5,13 @@ import (
 	"github.com/t94j0/mwnn/server"
 )
 
+var port string
+
 var ServerCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Start MWNN server",
 	Long:  "Start the MWNN server",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var port string
-		cmd.Flags().StringVarP(&port, "port", "p", "8080", "Set the port of the server")
+	Run: func(cmd *cobra.Command, args []string) {
 		server.StartServer(port)
-		return nil
 	},
 }
