@@ -1,13 +1,14 @@
 package client
 
 import (
-	"os"
-	"io/ioutil"
-	"log"
 	"bufio"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"strconv"
 	"strings"
+
 	"github.com/howeyc/gopass"
 )
 
@@ -25,11 +26,12 @@ func configureLogger() {
 }
 
 // Currently reads both keys at once, might want to seperate if we're going to implement a login page
-func loadKeys(publicKeyLocation string, privateKeyLocation string) {
+func loadKeys(publicKeyLocation string, privateKeyLocation string) error {
 
 	publicKeyByte, err := ioutil.ReadFile(publicKeyLocation)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Public key wasn't found")
+		return err
 	}
 	publicKey = string(publicKeyByte)
 
@@ -37,47 +39,51 @@ func loadKeys(publicKeyLocation string, privateKeyLocation string) {
 	// Configure the package-wide variable 'decryptor'
 	privateKeyByte, err := ioutil.ReadFile(privateKeyLocation)
 	if err != nil {
-		logger.Panic(err)
+		fmt.Println("Private Key wasn't found")
+		return err
 	}
 
 	decryptor.PrivateKey = string(privateKeyByte)
 
 	// List identities for user to choose
 	if err := decryptor.GetEntities(); err != nil {
-		logger.Panic(err)
+		fmt.Println("Internal error. Check key location")
+		return err
 	}
 	// Choose which Identity to use
 	scanner := bufio.NewReader(os.Stdin)
 	fmt.Printf("Choose number: ")
 	entityIndexStr, err := scanner.ReadString('\n')
 	if err != nil {
-		logger.Panic(err)
+		fmt.Println("Error getting input")
+		return err
 	}
 	entityIndexStr = strings.TrimSpace(entityIndexStr)
 	entityIndex, err := strconv.Atoi(entityIndexStr)
 	if err != nil {
-		logger.Fatal(err)
+		fmt.Println("Internal error")
+		return err
 	}
 	decryptor.IdentityIndex = entityIndex
 	// Private keys usually have a password associated with them
 	fmt.Printf("Private Key Password: ")
 	privateKeyPass, err = gopass.GetPasswd()
 	if err != nil {
-		fmt.Println("Error getting password for private key: " + err.Error())
-		os.Exit(1)
+		fmt.Println("Error getting password for private key")
+		return err
 	}
 	// FUTURE: Private key is stored in memory, is this OK?
 	// Pretty sure this is fine, openssh client (temporarily) stores ssh private key in a file at a user's homedir
 	decryptor.Password = string(privateKeyPass)
 	currentUser, _, _, err = decryptor.GetEntity()
 	if err != nil {
-		logger.Fatal(err)
+		fmt.Println("Error getting entities")
+		return err
 	}
 	// Make sure that password given by private key is correct
 	if err := testPassword(); err != nil {
-		fmt.Println(err)
 		fmt.Println("The password is incorrect")
 		logger.Fatal("Password Failed:", err)
 	}
-
+	return nil
 }

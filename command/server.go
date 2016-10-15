@@ -8,7 +8,7 @@ import (
 var port string
 
 func init() {
-	ServerCmd.Flags().StringVarP(&port, "port", "p", "6666", "Set the port of the server")
+	ServerCmd.Flags().StringVarP(&port, "port", "p", "8181", "Set the port of the server")
 }
 
 var ServerCmd = &cobra.Command{

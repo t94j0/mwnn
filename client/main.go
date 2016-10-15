@@ -110,7 +110,6 @@ func clearInput(g *gocui.Gui) {
 	})
 }
 
-
 /*
 
 Idea for commandHandler:
@@ -356,12 +355,14 @@ func testPassword() error {
 	return nil
 }
 
-func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) {
-
+func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
+	// Set function argument variables to public variables
 	serviceHost = host
 	servicePort = port
-	loadKeys(pubKeyLoc, prvKeyLoc)
 	logLocation = logLoc
+	if err := loadKeys(pubKeyLoc, prvKeyLoc); err != nil {
+		return err
+	}
 
 	configureLogger()
 
@@ -372,18 +373,18 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) {
 	conn, err = net.Dial("tcp", serviceHost+":"+servicePort)
 	if err != nil {
 		fmt.Println("Server is down")
-		logger.Fatal("Server is down")
+		return err
 	}
 	defer conn.Close()
 
 	g := gocui.NewGui()
 	if err := g.Init(); err != nil {
-		logger.Println(err)
+		return err
 	}
 	defer g.Close()
 	g.SetLayout(gocuiLayout)
 	if err := keybindings(g, conn); err != nil {
-		logger.Println(err)
+		return err
 	}
 
 	g.Execute(func(g *gocui.Gui) error {
@@ -402,6 +403,8 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) {
 	})
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		logger.Println(err)
+		return err
 	}
+
+	return nil
 }
