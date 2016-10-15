@@ -11,7 +11,7 @@ var ServerCmd = &cobra.Command{
 	Long:  "Start the MWNN server",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var port string
-		cmd.Flags().StringVarP(&port, "port", "p", "6666", "Set the port of the server")
+		cmd.Flags().StringVarP(&port, "port", "p", "8080", "Set the port of the server")
 		server.StartServer(port)
 		return nil
 	},

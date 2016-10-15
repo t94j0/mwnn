@@ -25,14 +25,16 @@ func configureLogger() {
 }
 
 // Currently reads both keys at once, might want to seperate if we're going to implement a login page
-func loadKeys(publicKeyLocation string, privateKeyLocation string) {
+func initPubKey(publicKeyLocation string) {
 
 	publicKeyByte, err := ioutil.ReadFile(publicKeyLocation)
 	if err != nil {
 		fmt.Println(err)
 	}
 	publicKey = string(publicKeyByte)
+}
 
+func initPrivKey(privateKeyLocation string) {
 	// Get the password for the private key/ id
 	// Configure the package-wide variable 'decryptor'
 	privateKeyByte, err := ioutil.ReadFile(privateKeyLocation)
@@ -79,5 +81,4 @@ func loadKeys(publicKeyLocation string, privateKeyLocation string) {
 		fmt.Println("The password is incorrect")
 		logger.Fatal("Password Failed:", err)
 	}
-
 }
