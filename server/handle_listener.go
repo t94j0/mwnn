@@ -25,22 +25,8 @@ func handleListener(connections map[string]User, conn net.Conn) {
 		buf := make([]byte, 10000)
 		// Read from connection into the buffer
 		if _, err := conn.Read(buf); err != nil {
-			// If the message is EOF, it means that they have disconnected, so send every user
-			// a message about them logging out
-			if err.Error() == "EOF" {
-				handleDebug(1, newUser.Username+" logged out")
-				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
-					handleDebug(2, err.Error())
-					break
-				}
-			} else if err.Error() == "EOF" {
-				handleDebug(1, newUser.Username+"logged out")
-				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
-					handleDebug(2, err.Error())
-				}
-			} else {
+			if err.Error() != "EOF" {
 				handleDebug(2, err.Error())
-				break
 			}
 		}
 
@@ -50,8 +36,12 @@ func handleListener(connections map[string]User, conn net.Conn) {
 		// Remove whitespace from buffer
 		buf = bytes.Trim(buf, "\x00")
 		// Discard empty buffer
-		if len(buf) == 0 {
-			continue
+		if buf == nil {
+			handleDebug(1, newUser.Username+" logged out")
+			if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
+				handleDebug(2, err.Error())
+			}
+			break
 		}
 
 		// Unmarshal message into `incomingMessage`
