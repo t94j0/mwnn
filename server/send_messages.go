@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/golang/protobuf/proto"
-	pb "github.com/t94j0/mwnn/client/message"
+	pb "github.com/t94j0/mwnn/message"
 )
 
 // Sends message to user by giving an unparsed proto and the raw message

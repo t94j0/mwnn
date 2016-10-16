@@ -13,20 +13,22 @@ import (
 )
 
 // Configure logger
-func configureLogger() {
+func configureLogger() error {
 	var err error
 	// Open the log file so that we can create the logger object
 	logFile, err = os.OpenFile(logLocation, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		fmt.Println("Failed to open log file")
+		return err
 	}
 	// Make sure the output is redirected to file instead of STDOUT
 	//	log.SetOutput(logFile)
 	logger = log.New(logFile, "logger: ", log.Ldate|log.Ltime|log.Llongfile)
+	return nil
 }
 
 // Currently reads both keys at once, might want to seperate if we're going to implement a login page
-func initPubKey(publicKeyLocation string) {
+func initPubKey(publicKeyLocation string) error {
 
 	publicKeyByte, err := ioutil.ReadFile(publicKeyLocation)
 	if err != nil {
@@ -34,9 +36,10 @@ func initPubKey(publicKeyLocation string) {
 		return err
 	}
 	publicKey = string(publicKeyByte)
+	return nil
 }
 
-func initPrivKey(privateKeyLocation string) {
+func initPrivKey(privateKeyLocation string) error {
 	// Get the password for the private key/ id
 	// Configure the package-wide variable 'decryptor'
 	privateKeyByte, err := ioutil.ReadFile(privateKeyLocation)

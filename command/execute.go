@@ -1,9 +1,9 @@
 package command
 
-import(
+import (
+	"fmt"
+
 	"github.com/spf13/cobra"
-	"os"
-	"os/user"
 )
 
 var HOME_DIR string
