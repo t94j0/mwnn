@@ -1,14 +1,16 @@
 package command
 
 import (
+<<<<<<< HEAD
 	"fmt"
 	"os/user"
 
+=======
+>>>>>>> Testing
 	"github.com/spf13/cobra"
 	"github.com/t94j0/mwnn/client"
 )
 
-var HOME_DIR string
 
 var (
 	ServiceHost        string
@@ -37,7 +39,7 @@ func init() {
 }
 
 var ClientCmd = &cobra.Command{
-	Use:   "client [server]",
+	Use:   "client [server] [# port] [# publickey] [# privatekey] [# log]",
 	Short: "Start MWNN client",
 	Long:  `Starts the MWNN client and connect to the specified server.`,
 	RunE: func(cmd *cobra.Command, args []string) error {

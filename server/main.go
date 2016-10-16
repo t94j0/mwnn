@@ -9,8 +9,8 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/golang/protobuf/proto"
-	"github.com/t94j0/mwnn/client/gpg"
-	pb "github.com/t94j0/mwnn/client/message"
+	"github.com/t94j0/mwnn/gpg"
+	pb "github.com/t94j0/mwnn/message"
 )
 
 // Create connection stack for managing all user connections
@@ -164,11 +164,16 @@ func handleListener(conn net.Conn) {
 		if _, err := conn.Read(buf); err != nil {
 			// If the message is EOF, it means that they have disconnected, so send every user
 			// a message about them logging out
-			if err.Error() == "EOF" {
+			if err.Error() != "EOF" {
 				fmt.Println(newUser.Username + " logged out")
 				if err := sendToEveryone(3, newUser.Username); err != nil {
 					fmt.Println(err)
 					break
+				}
+			} else if err.Error() == "EOF" {
+				fmt.Println(newUser.Username + " logged out")
+				if err := sendToEveryone(3, newUser.Username); err != nil {
+					fmt.Println(err)
 				}
 			} else {
 				fmt.Println(err)
@@ -182,8 +187,8 @@ func handleListener(conn net.Conn) {
 		// Remove whitespace from buffer
 		buf = bytes.Trim(buf, "\x00")
 		// Discard empty buffer
-		if len(buf) == 0 {
-			continue
+		if buf == nil {
+			break
 		}
 
 		// Unmarshal message into `incomingMessage`
