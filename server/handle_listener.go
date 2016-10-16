@@ -7,7 +7,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/golang/protobuf/proto"
-	pb "github.com/t94j0/mwnn/client/message"
+	pb "github.com/t94j0/mwnn/message"
 )
 
 func handleListener(connections map[string]User, conn net.Conn) {

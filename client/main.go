@@ -359,14 +359,23 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 	// Set function argument variables to public variables
 	serviceHost = host
 	servicePort = port
-	initPubKey(pubKeyLoc)
-	initPrivKey(prvKeyLoc)
-	logLocation = logLoc
-	if err := loadKeys(pubKeyLoc, prvKeyLoc); err != nil {
+
+	if err := initPubKey(pubKeyLoc); err != nil {
+		fmt.Println("Error loading public key")
 		return err
 	}
 
-	configureLogger()
+	if err := initPrivKey(prvKeyLoc); err != nil {
+		fmt.Println("Error loading private key")
+		return err
+	}
+
+	logLocation = logLoc
+
+	if err := configureLogger(); err != nil {
+		fmt.Println("Internal Error")
+		return err
+	}
 
 	defer logFile.Close()
 	// Dial server to get a net.Conn object and to make sure that the host is up

@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/t94j0/mwnn/client/gpg"
+	"github.com/t94j0/mwnn/gpg"
 )
 
 func loginUser(connections map[string]User, sender, password, publicKey string, c net.Conn) error {
