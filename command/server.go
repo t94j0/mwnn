@@ -5,10 +5,14 @@ import (
 	"github.com/t94j0/mwnn/server"
 )
 
-var port string
+var (
+	port       string
+	debugLevel int
+)
 
 func init() {
 	ServerCmd.Flags().StringVarP(&port, "port", "p", "8181", "Set the port of the server")
+	ServerCmd.Flags().IntVarP(&debugLevel, "debug", "d", 1, "Set debug level. Level 0 - No debugging. Level 1 - Normal debugging. Level 2 - Print GPG messages.")
 }
 
 var ServerCmd = &cobra.Command{
@@ -16,7 +20,7 @@ var ServerCmd = &cobra.Command{
 	Short: "Start MWNN server",
 	Long:  "Start the MWNN server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := server.StartServer(port); err != nil {
+		if err := server.StartServer(port, debugLevel); err != nil {
 			return err
 		}
 		return nil
