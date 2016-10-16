@@ -1,12 +1,8 @@
 package command
 
 import (
-<<<<<<< HEAD
 	"fmt"
 	"os/user"
-
-=======
->>>>>>> Testing
 	"github.com/spf13/cobra"
 	"github.com/t94j0/mwnn/client"
 )
