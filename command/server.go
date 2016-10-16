@@ -12,7 +12,7 @@ var (
 
 func init() {
 	ServerCmd.Flags().StringVarP(&port, "port", "p", "8181", "Set the port of the server")
-	ServerCmd.Flags().IntVarP(&debugLevel, "debug", "d", 1, "Set debug level. Level 0 - No debugging. Level 1 - Non-Error messages. Level 2 - Print error messages.")
+	ServerCmd.Flags().IntVarP(&debugLevel, "debug", "d", 2, "Set debug level. Level 0 - No debugging. Level 1 - Non-Error messages. Level 2 - Print error messages.")
 }
 
 var ServerCmd = &cobra.Command{
