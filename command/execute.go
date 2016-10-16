@@ -1,10 +1,12 @@
 package command
 
-import (
-	"fmt"
-
+import(
 	"github.com/spf13/cobra"
+	"os"
+	"os/user"
 )
+
+var HOME_DIR string
 
 func Execute() {
 	var rootCmd = &cobra.Command{Use: "mwnn"}

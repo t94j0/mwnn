@@ -28,10 +28,15 @@ func handleListener(connections map[string]User, conn net.Conn) {
 			// If the message is EOF, it means that they have disconnected, so send every user
 			// a message about them logging out
 			if err.Error() == "EOF" {
-				fmt.Println(newUser.Username + " logged out")
+				fmt.Println(newUser.Username, " logged out")
 				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
 					fmt.Println(err)
 					break
+				}
+			} else if err.Error() == "EOF" {
+				fmt.Println(newUser.Username, "logged out")
+				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
+					fmt.Println(err)
 				}
 			} else {
 				fmt.Println(err)

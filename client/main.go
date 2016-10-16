@@ -12,8 +12,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/t94j0/gocui"
-	"github.com/t94j0/mwnn/client/gpg"
-	pb "github.com/t94j0/mwnn/client/message"
+	"github.com/t94j0/mwnn/gpg"
+	pb "github.com/t94j0/mwnn/message"
 )
 
 /*
@@ -359,6 +359,8 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 	// Set function argument variables to public variables
 	serviceHost = host
 	servicePort = port
+	initPubKey(pubKeyLoc)
+	initPrivKey(prvKeyLoc)
 	logLocation = logLoc
 	if err := loadKeys(pubKeyLoc, prvKeyLoc); err != nil {
 		return err
