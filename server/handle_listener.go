@@ -28,18 +28,18 @@ func handleListener(connections map[string]User, conn net.Conn) {
 			// If the message is EOF, it means that they have disconnected, so send every user
 			// a message about them logging out
 			if err.Error() == "EOF" {
-				fmt.Println(newUser.Username, " logged out")
+				handleDebug(1, newUser.Username+" logged out")
 				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
-					fmt.Println(err)
+					handleDebug(2, err.Error())
 					break
 				}
 			} else if err.Error() == "EOF" {
-				fmt.Println(newUser.Username, "logged out")
+				handleDebug(1, newUser.Username+"logged out")
 				if err := sendToEveryone(connections, 3, newUser.Username); err != nil {
-					fmt.Println(err)
+					handleDebug(2, err.Error())
 				}
 			} else {
-				fmt.Println(err)
+				handleDebug(2, err.Error())
 				break
 			}
 		}
@@ -56,7 +56,7 @@ func handleListener(connections map[string]User, conn net.Conn) {
 
 		// Unmarshal message into `incomingMessage`
 		if err := proto.Unmarshal(buf, incomingMessage); err != nil {
-			fmt.Println("Error unmarshaling message")
+			handleDebug(2, err.Error())
 		}
 		switch incomingMessage.GetMessageType() {
 		// Message
@@ -64,12 +64,12 @@ func handleListener(connections map[string]User, conn net.Conn) {
 			// We have to wrap `GetMessageType` in an int because it's an int32, not an int.
 			// Kinda dumb, but whatever
 			if err := sendMessage(connections, int(incomingMessage.GetMessageType()), incomingMessage.GetRecipient(), incomingMessage.GetSender(), incomingMessage.GetMessage()); err != nil {
-				fmt.Println("an error:", err)
+				handleDebug(2, err.Error())
 			}
 		// Login
 		case 1:
 			newUser = preLoginUser(connections, id, incomingMessage.GetSender(), incomingMessage.GetMessage(), conn)
-			fmt.Println(newUser.Username, "initiated login")
+			handleDebug(1, newUser.Username+" initiated login")
 		// Server should be sending status 2, 3, 4, but not getting them
 		case 2:
 			fmt.Println("Server shouldn't be getting status 2")
@@ -81,12 +81,12 @@ func handleListener(connections map[string]User, conn net.Conn) {
 			fmt.Println("Server shouldn't get getting status 5")
 		case 6:
 			if err := loginUser(connections, incomingMessage.GetSender(), incomingMessage.GetMessage(), newUser.PublicKey, conn); err != nil {
-				fmt.Println(err)
+				handleDebug(2, err.Error())
 			}
-			fmt.Println(newUser.Username, "logged in")
+			handleDebug(1, newUser.Username+" logged in")
 		case 7:
 			if err := sendMessage(connections, int(incomingMessage.GetMessageType()), incomingMessage.GetRecipient(), incomingMessage.GetSender(), incomingMessage.GetMessage()); err != nil {
-				fmt.Println("an error:", err)
+				handleDebug(2, err.Error())
 			}
 
 		}

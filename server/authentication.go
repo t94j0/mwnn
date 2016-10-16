@@ -6,15 +6,53 @@ import (
 	"net"
 	"strings"
 
+	"github.com/jmcvetta/randutil"
 	"github.com/t94j0/mwnn/gpg"
 )
+
+// To understand how logging in is implimented, go to `docs/design.md` and look for the login process
+
+// Sets up user object to be authenticated
+// Make skeleton user with a random password to set up connection for login process
+func preLoginUser(connections map[string]User, id, sender, publicKey string, c net.Conn) User {
+	// Create user object to build user from
+	newUser := User{c, sender, publicKey, ""}
+
+	// Create password for the user
+	newPassword, err := randutil.String(10, randutil.Alphanumeric)
+	if err != nil {
+		handleDebug(2, err.Error())
+	}
+	newUser.TestPassword = newPassword
+
+	// Upgrade user from id to username
+	connections[sender] = newUser
+	delete(connections, id)
+	// Encrypt password and send to specified user
+	encryptedPassword, err := gpg.Encrypt(newUser.TestPassword, publicKey)
+	if err != nil {
+		fmt.Println(err)
+		if err := sendMessage(connections, 6, sender, "server", "error"); err != nil {
+			handleDebug(2, err.Error())
+		}
+	}
+	if err := sendMessage(connections, 6, sender, "server", encryptedPassword); err != nil {
+		handleDebug(2, err.Error())
+	}
+
+	// TODO return tuple with error and results for error handling
+	return newUser
+}
 
 func loginUser(connections map[string]User, sender, password, publicKey string, c net.Conn) error {
 	//TODO: Check here for the same user being logged in at the same time
 
 	// TODO: If someone has pwned the server, would they be able to steal the password from
 	// memory if we are putting it in clear text?
+	// Yes, it can happen, but this can happen to any other desktop application. The solution
+	// is to not get a memory dump of your machine.
 
+	// Check if the password is the same as the one that was specified in `preLogin`
 	if connections[sender].TestPassword != password {
 		if err := sendMessage(connections, 1, "server", sender, "error"); err != nil {
 			return err
@@ -46,29 +84,4 @@ func loginUser(connections map[string]User, sender, password, publicKey string, 
 	}
 
 	return nil
-}
-
-// Sets up user object to be authenticated
-// Make skeleton user with a random password to set up connection for login process
-func preLoginUser(connections map[string]User, id, sender, publicKey string, c net.Conn) User {
-	newUser := User{c, sender, publicKey, ""}
-
-	// TODO: Once I get wifi, use the randomstring module to generate a random password
-	// TODO: Secure the transfer of the password, becuase right now it's being recieved in cleartext.
-	newUser.TestPassword = "abc123"
-
-	connections[sender] = newUser
-	delete(connections, id)
-	encryptedPassword, err := gpg.Encrypt(newUser.TestPassword, publicKey)
-	if err != nil {
-		fmt.Println(err)
-		if err := sendMessage(connections, 6, sender, "server", "error"); err != nil {
-			fmt.Println(err)
-		}
-	}
-	if err := sendMessage(connections, 6, sender, "server", encryptedPassword); err != nil {
-		fmt.Println(err)
-	}
-	// TODO return tuple with error and results for error handling
-	return newUser
 }

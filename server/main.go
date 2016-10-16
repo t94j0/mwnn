@@ -14,6 +14,8 @@ type User struct {
 	TestPassword string
 }
 
+var debugLevel int
+
 // MessageType codes:
 // 0: Messaging. Any messages that should be displayed should have a MessageType of 0
 // 1: Pre-Auth. Send to server to start log-in process
@@ -24,11 +26,9 @@ type User struct {
 // 6: Auth. Sends a test password to crack with private key
 // 7: Private message. Sends a private message to a user
 
-//////////////////////
-// System Functions //
-//////////////////////
+func StartServer(port string, debugLvl int) error {
+	debugLevel = debugLvl
 
-func StartServer(port string, debugLevel int) error {
 	// Create connection stack for managing all user connections
 	var connections = make(map[string]User, 0)
 
@@ -37,7 +37,9 @@ func StartServer(port string, debugLevel int) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Started listener on port", port)
+
+	handleDebug(1, "Server started on port "+port)
+
 	for {
 		// We accept all connections, but if we want to block users from certian ip addresses,
 		// then we can do so here
@@ -46,8 +48,14 @@ func StartServer(port string, debugLevel int) error {
 			// We don't want to return this error because the server can still function without this
 			fmt.Println(err)
 		}
-		fmt.Println("A user has connected")
+		handleDebug(1, "A user has connected")
 
 		go handleListener(connections, conn)
+	}
+}
+
+func handleDebug(level int, debug string) {
+	if level <= debugLevel {
+		fmt.Println(debug)
 	}
 }
