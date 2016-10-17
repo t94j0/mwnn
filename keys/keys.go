@@ -76,14 +76,6 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 	return nil
 }
 
-func editKeyName() {
-
-}
-
-func editKeyComment() {
-
-}
-
 func changeDefaultKey() {
 
 }
