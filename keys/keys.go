@@ -13,10 +13,12 @@ import (
 
 var RecievedBadName = errors.New("Names cannot contain \"()<>|\x00\"")
 var RecievedBadEmail = errors.New("Email cannot contain \"()<>|\x00\"")
-var RecievedBadComment = errors.New("Comment cannot contain \"()<>|\x00\"")
 var PasswordMismatch = errors.New("Input passwords do not match")
 
-func generateKeyPair(pubKeyLoc, privKeyLoc, name, comment, email string) error {
+//var RecievedBadComment = errors.New("Comment cannot contain \"()<>|\x00\"")
+
+// Generates a key pair given parameters
+func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 
 	if strings.ContainsAny(name, "()<>|\x00") {
 		return RecievedBadName
@@ -24,9 +26,11 @@ func generateKeyPair(pubKeyLoc, privKeyLoc, name, comment, email string) error {
 	if strings.ContainsAny(email, "()<>|\x00") {
 		return RecievedBadEmail
 	}
-	if strings.ContainsAny(comment, "()<>|\x00") {
-		return RecievedBadComment
-	}
+	/*
+		if strings.ContainsAny(comment, "()<>|\x00") {
+			return RecievedBadComment
+		}
+	*/
 	fmt.Printf("Private Key Password: ")
 	privateKeyPass, err := gopass.GetPasswd()
 	if err != nil {
@@ -40,7 +44,7 @@ func generateKeyPair(pubKeyLoc, privKeyLoc, name, comment, email string) error {
 	if string(privateKeyPass) != string(privateKeyPass1) {
 		return PasswordMismatch
 	}
-	newPair, err := openpgp.NewEntity(name, comment, email, nil)
+	newPair, err := openpgp.NewEntity(name, "", email, nil)
 	if err != nil {
 		return err
 	}
