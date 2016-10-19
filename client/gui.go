@@ -12,9 +12,9 @@ func gocuiLayout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
 	// How many lines the input box is.
-	heightOfBox := 4
+	//heightOfBox := 4
 
-	if v, err := g.SetView("input_box", 1, maxY-heightOfBox+1, maxX-1, maxY-1); err != nil {
+	if v, err := g.SetView("input_box", 1, (maxY - (maxY/10)), maxX-1, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -29,7 +29,7 @@ func gocuiLayout(g *gocui.Gui) error {
 		v.Wrap = true
 	}
 
-	if v, err := g.SetView("messages_box", 0, 0, maxX-1, maxY-heightOfBox-1); err != nil {
+	if v, err := g.SetView("messages_box", (maxX/10), 0, maxX-1, (maxY - (maxY/10))); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -39,6 +39,17 @@ func gocuiLayout(g *gocui.Gui) error {
 
 		// Show an initial message
 		fmt.Fprintln(v, "Welcome to messenger.")
+	}
+
+	if v, err := g.SetView("channel_box", 1, 1, (maxX/10), (maxY - (maxY/10) - 1)); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+
+		v.Autoscroll = false
+		v.Frame = true
+		v.Title = "Channels:"
+
 	}
 
 	return nil

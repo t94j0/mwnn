@@ -44,18 +44,20 @@
 	1. "ChanBox"
 		+ Input(s):
 			1. Input Channel for InRouter (Parameter)
-			2. Login Messages (Runtime)
-			3. Logout Messages (Runtime)
-			4. Channel Move Messages (Runtime)
-			5. Channel Creation/Deletion Messages (Runtime)
+			2. A Cui box for printing channel/user list in (Parameter)
+			3. Login Messages (Runtime)
+			4. Logout Messages (Runtime)
+			5. Channel Move Messages (Runtime)
+			6. Channel Creation/Deletion Messages (Runtime)
 		+ Output(s):
 			1. Text written to screen
 
 	2. "Inbox"
 		+ Input(s):
 			1. Input Channel for InRouter (Parameter)
-			2. Chat Messages (Runtime)
-			3. Command Messages (Runtime)
+			2. A Cui box for printing messages in (Parameter)
+			3. Chat Messages (Runtime)
+			4. Command Messages (Runtime)
 		+ Output(s):
 			1. Text written to screen
 			2. Command output (Possibly not text?)
@@ -63,7 +65,8 @@
 	3. "Outbox"
 		+ Input(s):
 			1. Output Channel for OutRouter (Parameter)
-			2. Text from input device (Runtime)
+			2. A Cui box for reading messages from (Parameter)
+			3. Text from input device (Runtime)
 		+ Output(s):
 			1. Strings to OutRouter through Output Channel
 
