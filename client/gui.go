@@ -96,12 +96,7 @@ func keybindings(g *gocui.Gui, c net.Conn) error {
 		}); err != nil {
 		return err
 	}
-	// If we are on any view and the enter button is pressed, submit whats in the editbox buffer
-	// to the server.
-	// messageHandler is in main.go
-	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, messageHandler); err != nil {
-		return err
-	}
+
 
 	return nil
 }

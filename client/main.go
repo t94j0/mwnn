@@ -451,7 +451,12 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 		// Start Chanbox
 		go chanBox(chanbox, commuChans[1])
 		// Start Command Handler, it needs entire gui and its own channel
-
+		// If we are on any view and the enter button is pressed, submit whats in the editbox buffer
+		// to the server.
+		// messageHandler is in main.go
+		if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, messageHandler); err != nil {
+			return err
+		}
 		// Start outRouter
 
 		// Start Outbox

@@ -20,6 +20,7 @@ import (
 //////////////////////
 // Global Variables //
 //////////////////////
+var KeyNotFound = errors.New("There are no keys!")
 
 // Initializers
 var pathToPriv string
@@ -51,7 +52,7 @@ func (d *Decryptor) GetEntities() error {
 	}
 
 	if len(entityList) == 0 {
-		return errors.New("There are no keys!")
+		return KeyNotFound
 	}
 
 	for i, entity := range entityList {

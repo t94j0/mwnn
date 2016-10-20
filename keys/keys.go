@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"bytes"
 	"strings"
 
 	"github.com/howeyc/gopass"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 var RecievedBadName = errors.New("Names cannot contain \"()<>|\x00\"")
@@ -44,13 +46,13 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 	if string(privateKeyPass) != string(privateKeyPass1) {
 		return PasswordMismatch
 	}
-	newPair, err := openpgp.NewEntity(name, "", email, nil)
+	newPair, err := openpgp.NewEntity(name, " ", email, nil)
 	if err != nil {
 		return err
 	}
-	// TODO Encode keys with armor.Encode() and write to files
+
 	for _, identity := range newPair.Identities {
-		if err := identity.SelfSignature.SignUserId(identity.UserId.Id, newPair.PrimaryKey, newPair.PrivateKey, nil); err != nil {
+		if err := newPair.SignIdentity(identity.UserId.Id, newPair, nil); err != nil {
 			return err
 		}
 	}
@@ -60,18 +62,38 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 	if err != nil {
 		return err
 	}
-	armor.Encode(privateKeyFile, openpgp.PrivateKeyType, nil)
+	armoredBuff := bytes.NewBuffer(nil)
+	passwordBuff := bytes.NewBuffer(nil)
+	privateKeyBuff := bytes.NewBuffer(nil)
+	newPair.SerializePrivate(privateKeyBuff, nil)
+	w, err := armor.Encode(armoredBuff, openpgp.PrivateKeyType, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return nil
+	}
+	w.Write(privateKeyBuff.Bytes())
+	w.Close()
 	defer privateKeyFile.Close()
-	newPair.SerializePrivate(privateKeyFile, nil)
+	privateKeyFile.Write(armoredBuff.Bytes())
 
 	// Create public key file
 	publicKeyFile, err := os.Create(pubKeyLoc)
 	if err != nil {
 		return err
 	}
-	armor.Encode(publicKeyFile, openpgp.PublicKeyType, nil)
+	armoredBuff = bytes.NewBuffer(nil)
+	publicKeyBuff := bytes.NewBuffer(nil)
+	newPair.Serialize(publicKeyBuff)
+	w, err = armor.Encode(armoredBuff, openpgp.PublicKeyType, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return nil
+	}
+	w.Write(publicKeyBuff.Bytes())
+	w.Close()
 	defer publicKeyFile.Close()
-	newPair.Serialize(publicKeyFile)
+	publicKeyFile.Write(armoredBuff.Bytes())
+
 	return nil
 }
 
