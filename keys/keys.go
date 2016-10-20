@@ -55,6 +55,15 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 		}
 	}
 
+	// Create private key file
+	privateKeyFile, err := os.Create(privKeyLoc)
+	if err != nil {
+		return err
+	}
+	armor.Encode(privateKeyFile, openpgp.PrivateKeyType, nil)
+	defer privateKeyFile.Close()
+	newPair.SerializePrivate(privateKeyFile, nil)
+
 	// Create public key file
 	publicKeyFile, err := os.Create(pubKeyLoc)
 	if err != nil {
@@ -63,16 +72,6 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 	armor.Encode(publicKeyFile, openpgp.PublicKeyType, nil)
 	defer publicKeyFile.Close()
 	newPair.Serialize(publicKeyFile)
-
-	// Create private key file
-	privateKeyFile, err := os.Create(privKeyLoc)
-	if err != nil {
-		return err
-	}
-	armor.Encode(privateKeyFile, openpgp.PrivateKeyType, nil)
-	defer privateKeyFile.Close()
-	newPair.Serialize(privateKeyFile)
-
 	return nil
 }
 
