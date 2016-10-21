@@ -10,7 +10,6 @@ import (
 	"github.com/howeyc/gopass"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/packet"
 )
 
 var RecievedBadName = errors.New("Names cannot contain \"()<>|\x00\"")
@@ -63,7 +62,6 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 		return err
 	}
 	armoredBuff := bytes.NewBuffer(nil)
-	passwordBuff := bytes.NewBuffer(nil)
 	privateKeyBuff := bytes.NewBuffer(nil)
 	newPair.SerializePrivate(privateKeyBuff, nil)
 	w, err := armor.Encode(armoredBuff, openpgp.PrivateKeyType, nil)
@@ -71,7 +69,13 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 		fmt.Printf("%v", err)
 		return nil
 	}
-	w.Write(privateKeyBuff.Bytes())
+	plain, err := openpgp.SymmetricallyEncrypt(w, privateKeyPass, nil, nil)
+	if err != nil{
+		fmt.Printf(err.Error())
+		return err
+	}
+	_, _ = plain.Write(privateKeyBuff.Bytes())
+	plain.Close()
 	w.Close()
 	defer privateKeyFile.Close()
 	privateKeyFile.Write(armoredBuff.Bytes())
