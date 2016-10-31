@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/howeyc/gopass"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 )
@@ -48,7 +49,18 @@ func (d *Decryptor) GetEntities() error {
 
 	entityList, err := openpgp.ReadKeyRing(privateKeyAsc.Body)
 	if err != nil {
-		return err
+		md, err := openpgp.ReadMessage(privateKeyAsc.Body, nil, func(keys []openpgp.Key, symmetric bool) ([]byte, error) {
+			fmt.Printf("Private Key Password: ")
+			pass, _ := gopass.GetPasswd()
+			return pass, nil
+		}, nil)
+		if err != nil {
+			return err
+		}
+		entityList, err = openpgp.ReadKeyRing(md.UnverifiedBody)
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(entityList) == 0 {
@@ -56,7 +68,7 @@ func (d *Decryptor) GetEntities() error {
 	}
 
 	for i, entity := range entityList {
-		for k, _ := range entity.Identities {
+		for k := range entity.Identities {
 			//TODO: Just put this in an array and send it to main.go
 			fmt.Println(i, k)
 		}
@@ -83,7 +95,7 @@ func (d *Decryptor) GetEntity() (name string, entity *openpgp.Entity, entityList
 
 	entity = entityList[d.IdentityIndex]
 
-	for entityName, _ := range entityList[d.IdentityIndex].Identities {
+	for entityName := range entityList[d.IdentityIndex].Identities {
 		name = entityName
 	}
 	re, err := regexp.Compile("(.+?)[<(]")

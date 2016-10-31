@@ -14,13 +14,17 @@ type Setup struct {
 func getConfig() Setup {
 
 	con := config.NewDefault()
-	if _, err := os.Stat(HOME_DIR+"/.mwnn/config"); os.IsNotExist(err) { // If there is no config file make one
+	if _, err := os.Stat(HOME_DIR + "/.mwnn/config"); os.IsNotExist(err) { // If there is no config file make one
 		*con = generateConfig(*con)
 	} else { // Else assert that it has the correct fields
-		con, _ = config.ReadDefault(HOME_DIR+"/.mwnn/config")
-		if con.HasSection("Keys"){
-			if !con.HasOption("Keys", "Public-Key-Location"){con.AddOption("Keys", "Public-Key-Location", HOME_DIR+"/.mwnn/pub")}
-			if !con.HasOption("Keys", "Private-Key-Location"){con.AddOption("Keys", "Private-Key-Location", HOME_DIR+"/.mwnn/priv")}
+		con, _ = config.ReadDefault(HOME_DIR + "/.mwnn/config")
+		if con.HasSection("Keys") {
+			if !con.HasOption("Keys", "Public-Key-Location") {
+				con.AddOption("Keys", "Public-Key-Location", HOME_DIR+"/.mwnn/pub")
+			}
+			if !con.HasOption("Keys", "Private-Key-Location") {
+				con.AddOption("Keys", "Private-Key-Location", HOME_DIR+"/.mwnn/priv")
+			}
 		} else {
 			*con = generateConfig(*con)
 		}
@@ -33,12 +37,12 @@ func getConfig() Setup {
 	set := Setup{pubKey: "", privKey: ""}
 	pub, err := con.String("Keys", "Public-Key-Location")
 	if err != nil {
-		pub = HOME_DIR+"/.mwnn/pub"
+		pub = HOME_DIR + "/.mwnn/pub"
 	}
 	err = nil
 	priv, err = con.String("Keys", "Public-Key-Location")
 	if err != nil {
-		priv = HOME_DIR+"/.mwnn/priv"
+		priv = HOME_DIR + "/.mwnn/priv"
 	}
 	set.pubKey, set.privKey = pub, priv
 	return set

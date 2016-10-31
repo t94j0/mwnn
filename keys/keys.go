@@ -1,15 +1,16 @@
 package keys
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
-	"bytes"
 	"strings"
 
 	"github.com/howeyc/gopass"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
+	//	"golang.org/x/crypto/openpgp/packet"
 )
 
 var RecievedBadName = errors.New("Names cannot contain \"()<>|\x00\"")
@@ -55,27 +56,34 @@ func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
 			return err
 		}
 	}
-
+	/*
+		keyBuff := bytes.NewBuffer(nil)
+		k, _ := packet.SerializeSymmetricKeyEncrypted(keyBuff, privateKeyPass, nil)
+		symKeyBuff := bytes.NewBuffer(nil)
+		packWrite, _ := packet.SerializeSymmetricallyEncrypted(symKeyBuff, packet.CipherAES128, k, nil)
+	*/
 	// Create private key file
 	privateKeyFile, err := os.Create(privKeyLoc)
 	if err != nil {
 		return err
 	}
 	armoredBuff := bytes.NewBuffer(nil)
-	privateKeyBuff := bytes.NewBuffer(nil)
-	newPair.SerializePrivate(privateKeyBuff, nil)
+	finalPrivKey := bytes.NewBuffer(nil)
+	newPair.SerializePrivate(finalPrivKey, nil)
+
 	w, err := armor.Encode(armoredBuff, openpgp.PrivateKeyType, nil)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return nil
 	}
-	plain, err := openpgp.SymmetricallyEncrypt(w, privateKeyPass, nil, nil)
-	if err != nil{
-		fmt.Printf(err.Error())
-		return err
-	}
-	_, _ = plain.Write(privateKeyBuff.Bytes())
-	plain.Close()
+	packWrite, err := openpgp.SymmetricallyEncrypt(w, privateKeyPass, nil, nil)
+
+	//	privateKeyBuff := make([]byte, 10000)
+	//	finalPrivKey := bytes.NewBuffer(nil)
+	packWrite.Write(finalPrivKey.Bytes())
+	packWrite.Close()
+	//	finalPrivKey := bytes.NewBuffer(privateKeyBuff)
+	//	_, _ = w.Write(symKeyBuff.Bytes())
 	w.Close()
 	defer privateKeyFile.Close()
 	privateKeyFile.Write(armoredBuff.Bytes())

@@ -98,106 +98,106 @@ func handleMessage(buf []byte, out []chan string) {
 	}
 
 	switch incomingMessage.GetMessageType() {
-		// Type = 0; Message is a text message
-		case 0:
-			decryptedMessage, err := decryptor.Decrypt(string(incomingMessage.GetMessage()))
-			if err != nil && err != io.EOF {
-				logger.Println(err)
+	// Type = 0; Message is a text message
+	case 0:
+		decryptedMessage, err := decryptor.Decrypt(string(incomingMessage.GetMessage()))
+		if err != nil && err != io.EOF {
+			logger.Println(err)
+		}
+		// Message gets sent to the Inbox
+		out[0] <- incomingMessage.GetSender() + ":" + decryptedMessage
+		break
+
+	// Type = 1; Message is a login message
+	case 1:
+		if incomingMessage.GetMessage() != "error" {
+			for _, userPair := range strings.Split(incomingMessage.GetMessage(), ",") {
+				userArr := strings.Split(userPair, "|")
+				username := userArr[0]
+				usersPublicKey := userArr[1]
+				connectedUsers[username] = User{username, []byte(usersPublicKey)}
+				// Login message gets sent to Chanbox
+				out[1] <- blue(username) + "\n"
 			}
-			// Message gets sent to the Inbox
-			out[0] <- incomingMessage.GetSender()+":"+ decryptedMessage
-			break
+		} else {
+			logger.Println("There was an error with the loging message")
+		}
+		break
 
-		// Type = 1; Message is a login message
-		case 1:
-			if incomingMessage.GetMessage() != "error" {
-				for _, userPair := range strings.Split(incomingMessage.GetMessage(), ",") {
-					userArr := strings.Split(userPair, "|")
-					username := userArr[0]
-					usersPublicKey := userArr[1]
-					connectedUsers[username] = User{username, []byte(usersPublicKey)}
-					// Login message gets sent to Chanbox
-					out[1] <- blue(username)+"\n"
-				}
-			} else {
-				logger.Println("There was an error with the loging message")
-			}
-			break
+	// Create empty user with no public key. If they do not share their public
+	// key, they can't send messages to anybody
+	case 2:
+		loginArr := strings.Split(incomingMessage.GetMessage(), "|")
+		publicKey := string(loginArr[1])
+		connectedUsers[loginArr[0]] = User{loginArr[0], []byte(publicKey)}
 
-		// Create empty user with no public key. If they do not share their public
-		// key, they can't send messages to anybody
-		case 2:
-			loginArr := strings.Split(incomingMessage.GetMessage(), "|")
-			publicKey := string(loginArr[1])
-			connectedUsers[loginArr[0]] = User{loginArr[0], []byte(publicKey)}
+		// Send messages to individual boxes
+		out[0] <- green(loginArr[0] + " logged in.")
+		out[1] <- red(loginArr[0])
+		break
 
-			// Send messages to individual boxes
-			out[0]<- green(loginArr[0]+" logged in.")
-			out[1]<- red(loginArr[0])
-			break
+	// Someone logged out
+	case 3:
+		// Send appropriate logout messages
+		out[0] <- green(incomingMessage.GetMessage() + "logged out")
+		out[1] <- "Logout^:^" + incomingMessage.GetMessage()
+		delete(connectedUsers, incomingMessage.GetMessage())
+		break
 
-		// Someone logged out
-		case 3:
-			// Send appropriate logout messages
-			out[0]<- green(incomingMessage.GetMessage()+"logged out")
-			out[1]<- "Logout^:^"+incomingMessage.GetMessage()
-			delete(connectedUsers, incomingMessage.GetMessage())
-			break
+	// 4's are one of the squarest numbers there are!
+	case 4:
+		logger.Println("It's a 4")
+		break
 
-		// 4's are one of the squarest numbers there are!
-		case 4:
-			logger.Println("It's a 4")
-			break
+	// Some Error occured
+	case 6:
+		// First, check if they passed or failed the decrypt test and then finish the login
+		// process.
+		if incomingMessage.GetMessage() == "error" {
+			out[0] <- red("There was a problem logging in, please try again. Check'" + logLocation + "'for more information.")
+			logger.Println("Got an error message when trying to log in.")
+			return
+		}
+		if err := logIn(incomingMessage); err != nil {
+			logger.Println(err)
+		}
+		break
 
-		// Some Error occured
-		case 6:
-			// First, check if they passed or failed the decrypt test and then finish the login
-			// process.
-			if incomingMessage.GetMessage() == "error" {
-				out[0]<- red("There was a problem logging in, please try again. Check'"+logLocation+"'for more information.")
-				logger.Println("Got an error message when trying to log in.")
-				return
-			}
-			if err := logIn(incomingMessage); err != nil {
-				logger.Println(err)
-			}
-			break
-
-		// Personal Message
-		case 7:
-			decryptedMessage, err := decryptor.Decrypt(string(incomingMessage.GetMessage()))
-			if err != nil && err != io.EOF {
-				logger.Println(err)
-			}
-			// Send PM to inbox
-			out[0] <- purple("->"+" "+incomingMessage.GetSender()+":"+decryptedMessage)
-			break
+	// Personal Message
+	case 7:
+		decryptedMessage, err := decryptor.Decrypt(string(incomingMessage.GetMessage()))
+		if err != nil && err != io.EOF {
+			logger.Println(err)
+		}
+		// Send PM to inbox
+		out[0] <- purple("->" + " " + incomingMessage.GetSender() + ":" + decryptedMessage)
+		break
 	}
 }
 
-func chanBox(view *gocui.View ,in <-chan string) {
+func chanBox(view *gocui.View, in <-chan string) {
 	fmt.Fprintln(view, blue("\nOnline Users:"))
 	for newM := range in {
-		logout := strings.HasPrefix(newM,"Logout^:^")
+		logout := strings.HasPrefix(newM, "Logout^:^")
 		switch logout {
-			// User is logging in, handle appropriatly
-			case true:
-				// Placeholder
-				break
+		// User is logging in, handle appropriatly
+		case true:
+			// Placeholder
+			break
 
-			// User is logging in
-			case false:
-				fmt.Fprintf(view, newM)
-				break
+		// User is logging in
+		case false:
+			fmt.Fprintf(view, newM)
+			break
 		}
 	}
 }
 
-func inBox(view *gocui.View ,in <-chan string) {
-	for newM :=  range in {
-	newM = strings.Trim(newM, "\n")
-	newM = strings.Trim(newM, " ")
-	fmt.Fprintln(view, newM)
+func inBox(view *gocui.View, in <-chan string) {
+	for newM := range in {
+		newM = strings.Trim(newM, "\n")
+		newM = strings.Trim(newM, " ")
+		fmt.Fprintln(view, newM)
 	}
 }
 
@@ -423,7 +423,7 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 	}
 
 	// Open communication channels between channels
-	var commuChans = []chan string {
+	var commuChans = []chan string{
 		// Inbox channel: index 0
 		make(chan string),
 		// Chanbox channel: index 1

@@ -14,7 +14,7 @@ func gocuiLayout(g *gocui.Gui) error {
 	// How many lines the input box is.
 	//heightOfBox := 4
 
-	if v, err := g.SetView("input_box", 1, (maxY - (maxY/10)), maxX-1, maxY-1); err != nil {
+	if v, err := g.SetView("input_box", 1, (maxY - (maxY / 10)), maxX-1, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -29,7 +29,7 @@ func gocuiLayout(g *gocui.Gui) error {
 		v.Wrap = true
 	}
 
-	if v, err := g.SetView("messages_box", (maxX/10), 0, maxX-1, (maxY - (maxY/10))); err != nil {
+	if v, err := g.SetView("messages_box", (maxX / 10), 0, maxX-1, (maxY - (maxY / 10))); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -41,7 +41,7 @@ func gocuiLayout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "Welcome to messenger.")
 	}
 
-	if v, err := g.SetView("channel_box", 1, 1, (maxX/10), (maxY - (maxY/10) - 1)); err != nil {
+	if v, err := g.SetView("channel_box", 1, 1, (maxX / 10), (maxY - (maxY / 10) - 1)); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -96,7 +96,6 @@ func keybindings(g *gocui.Gui, c net.Conn) error {
 		}); err != nil {
 		return err
 	}
-
 
 	return nil
 }
