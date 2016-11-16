@@ -1,114 +1,75 @@
 package keys
 
 import (
-	"bytes"
-	"errors"
+
+	"bufio"
 	"fmt"
 	"os"
-	"strings"
+	"os/exec"
+	"os/user"
+	"github.com/robfig/config"
 
-	"github.com/howeyc/gopass"
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
-	//	"golang.org/x/crypto/openpgp/packet"
 )
 
-var RecievedBadName = errors.New("Names cannot contain \"()<>|\x00\"")
-var RecievedBadEmail = errors.New("Email cannot contain \"()<>|\x00\"")
-var PasswordMismatch = errors.New("Input passwords do not match")
-
-//var RecievedBadComment = errors.New("Comment cannot contain \"()<>|\x00\"")
-
 // Generates a key pair given parameters
-func GenerateKeyPair(pubKeyLoc, privKeyLoc, name, email string) error {
+func GenerateKeyPair() error {
 
-	if strings.ContainsAny(name, "()<>|\x00") {
-		return RecievedBadName
+	cmd := exec.Command("gpg", "--gen-key")
+	err := cmd.Run()
+	if err != nil{
+		fmt.Println("There was an error generating the key")
 	}
-	if strings.ContainsAny(email, "()<>|\x00") {
-		return RecievedBadEmail
-	}
-	/*
-		if strings.ContainsAny(comment, "()<>|\x00") {
-			return RecievedBadComment
-		}
-	*/
-	fmt.Printf("Private Key Password: ")
-	privateKeyPass, err := gopass.GetPasswd()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Re-enter Private Key Password: ")
-	privateKeyPass1, err := gopass.GetPasswd()
-	if err != nil {
-		return err
-	}
-	if string(privateKeyPass) != string(privateKeyPass1) {
-		return PasswordMismatch
-	}
-	newPair, err := openpgp.NewEntity(name, " ", email, nil)
-	if err != nil {
-		return err
-	}
-
-	for _, identity := range newPair.Identities {
-		if err := newPair.SignIdentity(identity.UserId.Id, newPair, nil); err != nil {
-			return err
-		}
-	}
-	/*
-		keyBuff := bytes.NewBuffer(nil)
-		k, _ := packet.SerializeSymmetricKeyEncrypted(keyBuff, privateKeyPass, nil)
-		symKeyBuff := bytes.NewBuffer(nil)
-		packWrite, _ := packet.SerializeSymmetricallyEncrypted(symKeyBuff, packet.CipherAES128, k, nil)
-	*/
-	// Create private key file
-	privateKeyFile, err := os.Create(privKeyLoc)
-	if err != nil {
-		return err
-	}
-	armoredBuff := bytes.NewBuffer(nil)
-	finalPrivKey := bytes.NewBuffer(nil)
-	newPair.SerializePrivate(finalPrivKey, nil)
-
-	w, err := armor.Encode(armoredBuff, openpgp.PrivateKeyType, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return nil
-	}
-	packWrite, err := openpgp.SymmetricallyEncrypt(w, privateKeyPass, nil, nil)
-
-	//	privateKeyBuff := make([]byte, 10000)
-	//	finalPrivKey := bytes.NewBuffer(nil)
-	packWrite.Write(finalPrivKey.Bytes())
-	packWrite.Close()
-	//	finalPrivKey := bytes.NewBuffer(privateKeyBuff)
-	//	_, _ = w.Write(symKeyBuff.Bytes())
-	w.Close()
-	defer privateKeyFile.Close()
-	privateKeyFile.Write(armoredBuff.Bytes())
-
-	// Create public key file
-	publicKeyFile, err := os.Create(pubKeyLoc)
-	if err != nil {
-		return err
-	}
-	armoredBuff = bytes.NewBuffer(nil)
-	publicKeyBuff := bytes.NewBuffer(nil)
-	newPair.Serialize(publicKeyBuff)
-	w, err = armor.Encode(armoredBuff, openpgp.PublicKeyType, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return nil
-	}
-	w.Write(publicKeyBuff.Bytes())
-	w.Close()
-	defer publicKeyFile.Close()
-	publicKeyFile.Write(armoredBuff.Bytes())
-
 	return nil
+
 }
 
-func changeDefaultKey() {
+func ListKeys() {
+
+	cmd := exec.Command("gpg", "--list-keys")
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil{
+		fmt.Println("There was an error listing the key(s)")
+	}
+
+}
+
+func ChangeDefaultKey(defKey string) {
+
+	usr, err := user.Current()
+    if err != nil {
+        fmt.Println("Error getting home directory")
+		return
+    }
+	home := usr.HomeDir
+
+	c, _ := config.ReadDefault(home + "/.mwnn/config")
+
+	pub, _ := c.String("Keys", "Public-Key-Location")
+	pubFile, _ := os.Create(pub)
+	pubWriter := bufio.NewWriter(pubFile)
+	cmd := exec.Command("gpg", "--armor", "--export", defKey)
+	cmd.Stdout = pubWriter
+	err = cmd.Run()
+	pubWriter.Flush()
+	pubFile.Close()
+	if err != nil{
+		fmt.Println("There was an error changing the default public key")
+		return
+	}
+
+	priv, _ := c.String("Keys", "Private-Key-Location")
+	privFile, _ := os.Create(priv)
+	privWriter := bufio.NewWriter(privFile)
+	cmd = exec.Command("gpg", "--armor", "--export-secret-key", defKey)
+	cmd.Stdout = privWriter
+	err = cmd.Run()
+	privWriter.Flush()
+	privFile.Close()
+	if err != nil{
+		fmt.Println("There was an error changing the default private key")
+		fmt.Println(err)
+		return
+	}
 
 }
