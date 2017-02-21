@@ -1,37 +1,56 @@
 package command
 
 import (
-	"github.com/robfig/config"
 	"os"
+
+	"github.com/robfig/config"
 )
 
+// Setup holds the public key and private key in memory
 type Setup struct {
 	pubKey  string
 	privKey string
 }
 
-// Grabs the configuration from the config file
-func getConfig() Setup {
-
+// Grabs the configuration from the config file '~/.mwnn/config`
+func getConfig() (Setup, error) {
 	con := config.NewDefault()
-	if _, err := os.Stat(HOME_DIR + "/.mwnn/config"); os.IsNotExist(err) { // If there is no config file make one
+
+	// Make sure the folder ~/.mwnn exists
+	if _, err := os.Stat(HOME_DIR + "/.mwnn/"); os.IsNotExist(err) {
+		if err := createFolder(HOME_DIR + "/.mwnn"); err != nil {
+			return Setup{}, err
+		}
+	}
+
+	// Make sure file ~/.mwnn/config is there
+	if _, err := os.Stat(HOME_DIR + "/.mwnn/config"); os.IsNotExist(err) {
 		*con = generateConfig(*con)
-	} else { // Else assert that it has the correct fields
-		con, _ = config.ReadDefault(HOME_DIR + "/.mwnn/config")
+	} else {
+		// Check the config file has the correct fields
+		con, err = config.ReadDefault(HOME_DIR + "/.mwnn/config")
+		if err != nil {
+			return Setup{}, err
+		}
 		if con.HasSection("Keys") {
 			if !con.HasOption("Keys", "Public-Key-Location") {
-				con.AddOption("Keys", "Public-Key-Location", HOME_DIR+"/.mwnn/pub")
+				con.AddOption("Keys", "Public-Key-Location",
+					HOME_DIR+"/.mwnn/pub")
 			}
 			if !con.HasOption("Keys", "Private-Key-Location") {
-				con.AddOption("Keys", "Private-Key-Location", HOME_DIR+"/.mwnn/priv")
+				con.AddOption("Keys", "Private-Key-Location",
+					HOME_DIR+"/.mwnn/priv")
 			}
 		} else {
 			*con = generateConfig(*con)
 		}
 	}
-	// No matter the case, we want to write the config file back to itself
-	writeConfig(*con)
+	// Write the config file back to itself
+	if err := writeConfig(*con); err != nil {
+		return Setup{}, err
+	}
 
+	// Get public key and private key from config files
 	var pub string
 	var priv string
 	set := Setup{pubKey: "", privKey: ""}
@@ -45,13 +64,13 @@ func getConfig() Setup {
 		priv = HOME_DIR + "/.mwnn/priv"
 	}
 	set.pubKey, set.privKey = pub, priv
-	return set
+
+	return set, nil
 
 }
 
 // Generates the default configuration for the keys
 func generateConfig(con config.Config) config.Config {
-
 	con.AddSection("Keys")
 	con.AddOption("Keys", "Public-Key-Location", HOME_DIR+"/.mwnn/pub")
 	con.AddOption("Keys", "Private-Key-Location", HOME_DIR+"/.mwnn/priv")
@@ -60,10 +79,15 @@ func generateConfig(con config.Config) config.Config {
 }
 
 // Writes the configuration to the default file
-func writeConfig(con config.Config) {
-
+func writeConfig(con config.Config) error {
 	var modePerm os.FileMode
-	modePerm = 0777
-	con.WriteFile(HOME_DIR+"/.mwnn/config", modePerm, "## MWNN CONFIG ##")
+	modePerm = 0600
+	if err := con.WriteFile(HOME_DIR+"/.mwnn/config", modePerm, "## MWNN CONFIG ##"); err != nil {
+		return err
+	}
+	return nil
+}
 
+func createFolder(path string) error {
+	return os.Mkdir(path, 0700)
 }

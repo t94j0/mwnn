@@ -25,7 +25,11 @@ func init() {
 	}
 	HOME_DIR = currUsr.HomeDir
 
-	set := getConfig()
+	set, err := getConfig()
+	if err != nil {
+		fmt.Println("Error getting the configuration")
+		// TODO: Create logger event for this
+	}
 
 	ClientCmd.Flags().StringVarP(&serviceHost, "host", "c", "localhost", "Server to connect to")
 	ClientCmd.Flags().StringVarP(&servicePort, "port", "p", "8181", "Port to connect to when trying host")

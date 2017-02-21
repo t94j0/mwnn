@@ -376,7 +376,8 @@ func testPassword() error {
 	return nil
 }
 
-// Kicks off the client
+// StartClient Initializes the public/private keys, the logger, the UI, and
+// connects to the server
 func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 	// Set function argument variables to public variables
 	serviceHost = host
@@ -400,7 +401,12 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 		fmt.Println("Internal Error")
 		return err
 	}
-	defer logFile.Close()
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			fmt.Println("Error closing log file")
+			logger.Println(err)
+		}
+	}()
 
 	// Dial server to get a net.Conn object and to make sure that the host is up
 	var err error
@@ -409,7 +415,12 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 		fmt.Println("Server is down")
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			fmt.Println("Error closing TCP connection")
+			logger.Println(err)
+		}
+	}()
 
 	// Init the gui
 	g := gocui.NewGui()
@@ -446,9 +457,7 @@ func StartClient(host, port, pubKeyLoc, prvKeyLoc, logLoc string) error {
 
 		// Start the inRouter
 		go inRouter(commuChans)
-		// Start Inbox
 		go inBox(inbox, commuChans[0])
-		// Start Chanbox
 		go chanBox(chanbox, commuChans[1])
 		// Start Command Handler, it needs entire gui and its own channel
 		// If we are on any view and the enter button is pressed, submit whats in the editbox buffer
