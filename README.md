@@ -1,3 +1,5 @@
+# NOTICE: This repository has been deemed NOT secure. Messages can be repeated with replay attacks. This will be fixed in the future.
+
 # Messenger With No Name [MWNN (Pronounced Minn)]
 
 ![](http://i.imgur.com/232MLcS.gif)
